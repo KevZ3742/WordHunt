@@ -6,29 +6,42 @@
  *
  * Exposes a factory `createBoard(send)` that returns the board API.
  * `send` is the WebSocket send function used to submit words.
+ *
+ * Optionally accepts a `trie` for client-side live validation so the
+ * word display can show green while dragging before the server confirms.
  */
 
 export function createBoard(send) {
-  let gameBoard = [];       // 16-letter array set by server
-  let currentPath = [];     // tile indices in selection order
+  let gameBoard    = [];   // 16-letter array set by server
+  let currentPath  = [];   // tile indices in selection order
+  let clientTrie   = null; // set via setTrie() once dictionary loads
+  let foundWords   = new Set(); // words already found this game
 
   // ── PUBLIC API ──
 
   function setBoard(board) {
     gameBoard = board;
+    foundWords.clear();
   }
 
   function getBoard() {
     return gameBoard;
   }
 
-  /** Returns the word string built from currentPath, or ''. */
+  /** Provide the client-side Trie for live word validation feedback. */
+  function setTrie(trie) {
+    clientTrie = trie;
+  }
+
+  /** Returns the lowercase word string built from currentPath, or ''. */
   function currentWord() {
     return currentPath.map(i => gameBoard[i] ?? '').join('');
   }
 
-  /** Add a tile index to the path, with adjacency + duplicate checks.
-   *  Returns true if the tile was added. */
+  /**
+   * Add a tile index to the path, with adjacency + duplicate checks.
+   * Returns true if the tile was added.
+   */
   function tryAddIndex(idx) {
     if (isNaN(idx) || idx < 0 || idx >= 16) return false;
 
@@ -77,6 +90,7 @@ export function createBoard(send) {
     if (!wd) return;
 
     if (msg.ok) {
+      foundWords.add(msg.word.toLowerCase());
       wd.textContent = msg.word.toUpperCase() + ' +' + msg.pts;
       wd.className = 'word-display found';
       _addFoundChip(msg.word, msg.pts);
@@ -99,6 +113,7 @@ export function createBoard(send) {
   function clearFoundList() {
     const el = document.getElementById('g-found-list');
     if (el) el.innerHTML = '';
+    foundWords.clear();
   }
 
   // ── PRIVATE HELPERS ──
@@ -117,15 +132,48 @@ export function createBoard(send) {
     document.querySelector(`.tile[data-idx="${idx}"]`)?.classList.remove(...classes);
   }
 
+  /**
+   * Update the word display bar.
+   * Priority: found (already got it) > valid (trie hit) > building > empty
+   */
   function _refreshDisplay() {
     const wd = document.getElementById('g-word');
     if (!wd) return;
+
     if (currentPath.length === 0) {
-      wd.textContent = '—'; wd.className = 'word-display'; return;
+      wd.textContent = '—';
+      wd.className = 'word-display';
+      return;
     }
-    const word = currentWord().toUpperCase();
-    wd.textContent = word;
-    wd.className = 'word-display' + (currentPath.length >= 3 ? ' valid' : '');
+
+    const word = currentWord();
+    const upper = word.toUpperCase();
+    wd.textContent = upper;
+
+    if (currentPath.length < 3) {
+      // Still building — no validation yet
+      wd.className = 'word-display';
+      return;
+    }
+
+    if (foundWords.has(word)) {
+      // Already found this word this game
+      wd.className = 'word-display found';
+      return;
+    }
+
+    if (clientTrie) {
+      if (clientTrie.search(word)) {
+        wd.className = 'word-display valid';   // green: word exists
+      } else if (clientTrie.startsWith(word)) {
+        wd.className = 'word-display';          // neutral: could still grow into a word
+      } else {
+        wd.className = 'word-display invalid';  // red: no word starts with this
+      }
+    } else {
+      // Trie not loaded yet — just show neutral valid for 3+ letters
+      wd.className = 'word-display' + (currentPath.length >= 3 ? ' valid' : '');
+    }
   }
 
   function _drawLines() {
@@ -162,7 +210,7 @@ export function createBoard(send) {
   }
 
   return {
-    setBoard, getBoard, currentWord,
+    setBoard, getBoard, setTrie, currentWord,
     tryAddIndex, clearPath, submitPath,
     onWordResult, clearFoundList,
     isAdjacent,

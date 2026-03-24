@@ -15,6 +15,7 @@
  *   Drag input → hooks/useDrag.js
  *   WS layer   → lib/ws.js
  *   DOM utils  → lib/utils.js
+ *   Trie       → lib/trie.js  (client-side live validation)
  */
 
 import { connect, send, onMessage } from './lib/ws.js';
@@ -24,6 +25,7 @@ import { initDrag }    from './hooks/useDrag.js';
 import { Timer }       from './components/Timer.js';
 import { ScoreStrip }  from './components/ScoreStrip.js';
 import { EndScreen }   from './components/EndScreen.js';
+import { buildTrie }   from './lib/trie.js';
 
 // ── APP STATE ──
 let myIndex   = -1;
@@ -44,6 +46,17 @@ function _setConn(ok) {
   if (dot)   dot.className   = 'conn-dot ' + (ok ? 'ok' : 'err');
   if (label) label.textContent = ok ? 'connected' : 'reconnecting…';
 }
+
+// ── DICTIONARY (sent once by server on connect) ──
+// Server sends { type: 'dictionary', words: string[] } immediately on connection.
+// We build the client Trie from it for live word-validation feedback while dragging.
+onMessage('dictionary', msg => {
+  if (Array.isArray(msg.words) && msg.words.length > 0) {
+    const trie = buildTrie(msg.words);
+    board.setTrie(trie);
+    console.log(`[trie] loaded ${msg.words.length} words`);
+  }
+});
 
 // ── SERVER MESSAGE HANDLERS ──
 
