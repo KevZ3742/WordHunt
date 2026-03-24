@@ -8,24 +8,26 @@
  *  - Delegate rendering to components / hooks
  *
  * Everything that touches a specific piece of UI is delegated:
- *   Timer      → components/Timer.js
- *   ScoreStrip → components/ScoreStrip.js
- *   EndScreen  → components/EndScreen.js
- *   Board/path → hooks/useBoard.js
- *   Drag input → hooks/useDrag.js
- *   WS layer   → lib/ws.js
- *   DOM utils  → lib/utils.js
- *   Trie       → lib/trie.js  (client-side live validation)
+ *   Timer         → components/Timer.js
+ *   ScoreStrip    → components/ScoreStrip.js
+ *   EndScreen     → components/EndScreen.js
+ *   AnalysisScreen→ components/AnalysisScreen.js
+ *   Board/path    → hooks/useBoard.js
+ *   Drag input    → hooks/useDrag.js
+ *   WS layer      → lib/ws.js
+ *   DOM utils     → lib/utils.js
+ *   Trie          → lib/trie.js  (client-side live validation)
  */
 
 import { connect, send, onMessage } from './lib/ws.js';
 import { showScreen, toast, showScorePop } from './lib/utils.js';
-import { createBoard } from './hooks/useBoard.js';
-import { initDrag }    from './hooks/useDrag.js';
-import { Timer }       from './components/Timer.js';
-import { ScoreStrip }  from './components/ScoreStrip.js';
-import { EndScreen }   from './components/EndScreen.js';
-import { buildTrie }   from './lib/trie.js';
+import { createBoard }   from './hooks/useBoard.js';
+import { initDrag }      from './hooks/useDrag.js';
+import { Timer }         from './components/Timer.js';
+import { ScoreStrip }    from './components/ScoreStrip.js';
+import { EndScreen }     from './components/EndScreen.js';
+import { AnalysisScreen }from './components/AnalysisScreen.js';
+import { buildTrie }     from './lib/trie.js';
 
 // ── APP STATE ──
 let myIndex   = -1;
@@ -48,8 +50,6 @@ function _setConn(ok) {
 }
 
 // ── DICTIONARY (sent once by server on connect) ──
-// Server sends { type: 'dictionary', words: string[] } immediately on connection.
-// We build the client Trie from it for live word-validation feedback while dragging.
 onMessage('dictionary', msg => {
   if (Array.isArray(msg.words) && msg.words.length > 0) {
     const trie = buildTrie(msg.words);
@@ -205,6 +205,26 @@ window._startGame = function () {
 
 window._clearPath = function () {
   board.clearPath();
+};
+
+// ── ANALYSIS SCREEN ACTIONS ──
+
+window._openAnalysis = function () {
+  const msg = EndScreen.getLastMsg();
+  if (!msg) return;
+  AnalysisScreen.open(msg, EndScreen.getLastMyIndex());
+};
+
+window._backToResults = function () {
+  showScreen('s-end');
+};
+
+window._analysisPrev = function () {
+  AnalysisScreen.prev();
+};
+
+window._analysisNext = function () {
+  AnalysisScreen.next();
 };
 
 // ── BOOT ──

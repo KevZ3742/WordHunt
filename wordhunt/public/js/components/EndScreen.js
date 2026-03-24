@@ -5,11 +5,23 @@
  *   import { EndScreen } from './components/EndScreen.js';
  *   EndScreen.render(msg, myIndex);
  *
- * `msg` shape: { winner, players: [{ name, score, words }], allWords: string[] }
+ * `msg` shape: { winner, players: [{ name, score, words }], allWords: string[], board: string[] }
  */
 
+import { attachDefinitionTooltip, injectTooltipStyles } from '../hooks/useDefinition.js';
+
+// Stored so the analysis screen can re-use it
+let _lastMsg     = null;
+let _lastMyIndex = 0;
+
 export const EndScreen = {
+  getLastMsg()     { return _lastMsg; },
+  getLastMyIndex() { return _lastMyIndex; },
+
   render(msg, myIndex) {
+    _lastMsg     = msg;
+    _lastMyIndex = myIndex;
+
     const isMe = msg.winner === msg.players[myIndex]?.name;
 
     // Winner banner
@@ -51,6 +63,22 @@ export const EndScreen = {
         return `<span class="aw-chip ${cls}">${w}<span class="aw-len"> ${w.length}</span></span>`;
       }).join('');
     }
+
+    // Show the analyse button only if we have board data
+    const analyseBtn = document.getElementById('btn-analyse');
+    if (analyseBtn) analyseBtn.style.display = msg.board ? '' : 'none';
+
+    // Attach definition tooltips to all word chips on the results screen
+    injectTooltipStyles();
+    // Use setTimeout so the DOM is fully painted before we query
+    setTimeout(() => {
+      attachDefinitionTooltip('#aw-grid', '.aw-chip',
+        el => el.childNodes[0]?.textContent?.trim().toLowerCase() ?? ''
+      );
+      attachDefinitionTooltip('#end-results', '.result-word-chip',
+        el => el.textContent.trim().toLowerCase()
+      );
+    }, 0);
   },
 };
 

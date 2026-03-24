@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/lobby.css">
   <link rel="stylesheet" href="/css/game.css">
   <link rel="stylesheet" href="/css/end.css">
+  <link rel="stylesheet" href="/css/analysis.css">
 </head>
 <body>
 
@@ -102,8 +103,49 @@
       <div class="all-words-grid" id="aw-grid"></div>
     </div>
     <div style="display:flex;gap:.75rem;margin-top:1rem">
+      <button class="btn btn-outline" id="btn-analyse" onclick="window._openAnalysis()">🔍 Analyse Board</button>
       <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
     </div>
+  </div>
+
+  <!-- ANALYSIS SCREEN -->
+  <div id="s-analysis" class="screen">
+    <div class="analysis-header">
+      <div class="analysis-title">Board Analysis</div>
+      <button class="btn btn-outline" style="padding:.45rem .9rem;font-size:.72rem" onclick="window._backToResults()">← Results</button>
+    </div>
+
+    <!-- Read-only board -->
+    <div class="analysis-board-wrap" id="a-board-wrap">
+      <svg class="analysis-svg" id="a-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+      <div class="grid" id="a-grid"></div>
+    </div>
+
+    <!-- Selected word display -->
+    <div class="analysis-word-bar" id="a-word-bar">
+      <div class="aword-text" id="a-word-text">—</div>
+      <div class="aword-meta" id="a-word-meta"></div>
+    </div>
+
+    <!-- Prev / counter / next -->
+    <div class="analysis-nav">
+      <button class="nav-btn" id="a-prev" onclick="window._analysisPrev()">←</button>
+      <div class="nav-counter" id="a-counter">— / —</div>
+      <button class="nav-btn" id="a-next" onclick="window._analysisNext()">→</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="analysis-legend">
+      <div class="legend-item">
+        <div class="legend-dot found"></div> Words you found
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot missed"></div> Missed words
+      </div>
+    </div>
+
+    <!-- Scrollable word pills -->
+    <div class="analysis-word-list" id="a-word-list"></div>
   </div>
 
   <div class="toast" id="toast"></div>

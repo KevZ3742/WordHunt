@@ -12,16 +12,6 @@ app.use(express.static(PUBLIC_DIR));
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 
 // ── DICTIONARY ──
-// Pull from `an-array-of-english-words` (275k words, MIT licence).
-// We filter down to words that are:
-//   • 3–8 letters (sweet spot for a 4×4 board game)
-//   • purely lowercase a–z (no hyphenated or accented entries)
-//
-// The filtered list (~115k words) is built once at startup, stored in both
-// a Set (O(1) lookup for validation) and a Trie (prefix-pruned DFS solving).
-// The same array is sent to every client so they can build their own Trie
-// for live drag-feedback without a round-trip to the server.
-
 const RAW_WORDS = require('an-array-of-english-words');
 
 const WORD_ARRAY = RAW_WORDS.filter(
@@ -73,9 +63,6 @@ for (const w of WORD_ARRAY) TRIE.insert(w);
 console.log(`[trie] built`);
 
 // ── BOARD GENERATION ──
-// Weighted random letter selection — vowels are boosted so every board
-// is playable.  We also guarantee ≥2 vowels per row.
-
 const LETTER_WEIGHTS = {
   a:9, e:12, i:9, o:8, u:4,
   s:6, t:6,  r:6, n:6, l:4,
@@ -104,7 +91,6 @@ function generateBoard(size = 4) {
     const row = [];
     let vowelCount = 0;
     for (let c = 0; c < size; c++) {
-      // Force a vowel in the last slot if we haven't hit 2 yet
       if (vowelCount < 2 && c === size - 1) {
         const v = [...VOWELS][Math.floor(Math.random() * 5)];
         row.push(v);
@@ -121,9 +107,6 @@ function generateBoard(size = 4) {
 }
 
 // ── BOARD SOLVER ──
-// DFS from every cell, pruning branches via Trie.startsWith.
-// Depth capped at 8 to match our dictionary filter and keep solve time < 50ms.
-
 const DIRECTIONS = [];
 for (let dr = -1; dr <= 1; dr++)
   for (let dc = -1; dc <= 1; dc++)
@@ -165,7 +148,6 @@ function scoreWord(word) {
 }
 
 // ── PATH VALIDATION ──
-// Called server-side for every submitted word to prevent cheating.
 function validatePath(board, path, size = 4) {
   if (!path || path.length < 3) return false;
 
@@ -181,7 +163,7 @@ function validatePath(board, path, size = 4) {
       const pr = Math.floor(path[k - 1] / size), pc = path[k - 1] % size;
       const cr = Math.floor(idx / size),          cc = idx % size;
       const dr = Math.abs(cr - pr), dc = Math.abs(cc - pc);
-      if (dr > 1 || dc > 1) return false; // not adjacent (including diagonals)
+      if (dr > 1 || dc > 1) return false;
     }
 
     visited.add(idx);
@@ -193,7 +175,7 @@ function validatePath(board, path, size = 4) {
 
 // ── ROOMS ──
 const rooms        = {};
-const GAME_DURATION = 90; // seconds
+const GAME_DURATION = 90;
 
 function broadcast(room, msg) {
   const json = JSON.stringify(msg);
@@ -252,6 +234,7 @@ function initGame(room) {
       broadcastState(room);
       broadcast(room, {
         type:    'game_over',
+        board:   g.board,          // ← included so the analysis screen can replay paths
         players: g.players.map(p => ({ name: p.name, score: p.score, words: p.words })),
         allWords: g.allWords,
         winner:  g.players.reduce((a, b) => a.score >= b.score ? a : b).name,
@@ -264,8 +247,6 @@ function initGame(room) {
 wss.on('connection', ws => {
   let myRoom = null, myCode = null;
 
-  // Send the dictionary immediately so the client can build its Trie.
-  // We send the array rather than the raw 3.4MB file — already filtered to ~115k.
   ws.send(JSON.stringify({ type: 'dictionary', words: WORD_ARRAY }));
 
   ws.on('message', raw => {

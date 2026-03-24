@@ -1,0 +1,232 @@
+/* ── ANALYSIS SCREEN ── */
+#s-analysis {
+  flex-direction: column;
+  align-items: center;
+  padding: .75rem 1rem 2rem;
+  gap: .75rem;
+  min-height: 100vh;
+  justify-content: flex-start;
+}
+
+/* ── HEADER ── */
+.analysis-header {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .4rem 0;
+}
+.analysis-title {
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── BOARD (read-only replay) ── */
+.analysis-board-wrap {
+  position: relative;
+  width: var(--grid-size);
+  height: var(--grid-size);
+  flex-shrink: 0;
+}
+
+.analysis-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Replay path line */
+.replay-line {
+  stroke: var(--accent2);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.replay-line.visible { opacity: .7; }
+
+/* Tiles in analysis mode */
+.analysis-tile {
+  border-radius: 12px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(1.1rem, 5vw, 1.5rem);
+  font-weight: 700;
+  color: var(--text);
+  position: relative;
+  transition: background .25s, border-color .25s, color .25s, transform .25s;
+  user-select: none;
+}
+
+.analysis-tile.in-path {
+  background: linear-gradient(135deg, rgba(0,212,255,.2), rgba(0,255,136,.2));
+  border-color: var(--accent2);
+  color: var(--accent2);
+  transform: scale(1.06);
+}
+
+.analysis-tile.path-start {
+  background: linear-gradient(135deg, rgba(0,255,136,.35), rgba(0,212,255,.2));
+  border-color: var(--accent2);
+  box-shadow: 0 0 14px rgba(0,255,136,.3);
+}
+
+/* Step number badge on tile */
+.tile-step {
+  position: absolute;
+  top: 3px; left: 5px;
+  font-size: .48rem;
+  color: var(--accent2);
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.analysis-tile.in-path .tile-step { opacity: 1; }
+
+/* ── WORD DISPLAY BAR ── */
+.analysis-word-bar {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: .65rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+.analysis-word-bar.active { border-color: var(--accent2); }
+
+.aword-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent2);
+  letter-spacing: .15em;
+  flex: 1;
+}
+.aword-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: .72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── NAVIGATION ARROWS ── */
+.analysis-nav {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+}
+
+.nav-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1.1rem;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.nav-btn:active { transform: scale(.95); }
+.nav-btn:disabled { opacity: .25; cursor: not-allowed; }
+
+.nav-counter {
+  font-family: 'Space Mono', monospace;
+  font-size: .72rem;
+  color: var(--muted);
+  min-width: 70px;
+  text-align: center;
+}
+
+/* ── WORD LIST PILLS ── */
+.analysis-word-list {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  justify-content: flex-start;
+}
+
+.aw-pill {
+  font-family: 'Space Mono', monospace;
+  font-size: .68rem;
+  padding: .25rem .65rem;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.aw-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.aw-pill.selected {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  background: rgba(0,255,136,.08);
+}
+.aw-pill.found-by-me {
+  color: var(--accent2);
+  border-color: rgba(0,255,136,.3);
+}
+.aw-pill.found-by-me.selected {
+  background: rgba(0,255,136,.14);
+  border-color: var(--accent2);
+}
+
+/* length badge inside pill */
+.pill-len {
+  font-size: .5rem;
+  color: var(--muted);
+  margin-left: .2rem;
+}
+
+/* ── LEGEND ── */
+.analysis-legend {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-family: 'Space Mono', monospace;
+  font-size: .58rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.legend-dot.found { background: var(--accent2); }
+.legend-dot.missed { background: var(--border); }
