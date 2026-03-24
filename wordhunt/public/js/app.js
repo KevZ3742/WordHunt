@@ -38,15 +38,19 @@ const TOTAL_TIME = 90;
 const board = createBoard(send);
 
 // ── WEBSOCKET CONNECTION STATUS ──
-onMessage('__connected',    () => _setConn(true));
-onMessage('__disconnected', () => _setConn(false));
-onMessage('__error',        () => _setConn(false));
+onMessage('__connected',    () => _setConn(true, 0));
+onMessage('__disconnected', (msg) => _setConn(false, msg._attempt ?? 0));
+onMessage('__error',        () => _setConn(false, 0));
 
-function _setConn(ok) {
+function _setConn(ok, attempt) {
   const dot   = document.getElementById('conn-dot');
   const label = document.getElementById('conn-label');
-  if (dot)   dot.className   = 'conn-dot ' + (ok ? 'ok' : 'err');
-  if (label) label.textContent = ok ? 'connected' : 'reconnecting…';
+  if (dot)   dot.className     = 'conn-dot ' + (ok ? 'ok' : 'err');
+  if (label) label.textContent = ok
+    ? 'connected'
+    : attempt > 0
+      ? `reconnecting… (${attempt})`
+      : 'connecting…';
 }
 
 // ── DICTIONARY (sent once by server on connect) ──

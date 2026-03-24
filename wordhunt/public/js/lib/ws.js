@@ -1,29 +1,50 @@
-/**
- * ws.js — WebSocket connection + simple event bus.
- *
- * Usage:
- *   import { send, onMessage, connect } from './lib/ws.js';
- *   onMessage('game_state', (msg) => { ... });
- *   connect();
- */
-
 const handlers = {};
+let _ws      = null;
+let _attempt = 0;
+let _intentionalClose = false;
 
-let _ws = null;
+const BACKOFF = [1000, 2000, 3000, 5000, 8000, 10000];
 
 export function connect() {
+  _intentionalClose = false;
+  _attempt = 0;
+  _tryConnect();
+}
+
+function _tryConnect() {
+  if (_intentionalClose) return;
+
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   _ws = new WebSocket(`${proto}://${location.host}`);
 
-  _ws.onopen  = () => _emit('__connected', {});
-  _ws.onclose = () => { _emit('__disconnected', {}); setTimeout(connect, 2000); };
-  _ws.onerror = () => _emit('__error', {});
+  _ws.onopen = () => {
+    _attempt = 0;
+    _emit('__connected', {});
+  };
+
+  _ws.onclose = () => {
+    _emit('__disconnected', { _attempt });
+    if (_intentionalClose) return;
+    const delay = BACKOFF[Math.min(_attempt, BACKOFF.length - 1)];
+    _attempt++;
+    setTimeout(_tryConnect, delay);
+  };
+
+  _ws.onerror = () => {
+    _emit('__error', {});
+  };
+
   _ws.onmessage = (e) => {
     let msg;
     try { msg = JSON.parse(e.data); } catch { return; }
     _emit(msg.type, msg);
-    _emit('*', msg); // wildcard listener
+    _emit('*', msg);
   };
+}
+
+export function disconnect() {
+  _intentionalClose = true;
+  _ws?.close();
 }
 
 export function send(obj) {
@@ -32,18 +53,10 @@ export function send(obj) {
   }
 }
 
-/**
- * Register a handler for a specific message type.
- * Use '__connected' / '__disconnected' for connection events.
- * Use '*' to receive all messages.
- * Returns an unsubscribe function.
- */
 export function onMessage(type, fn) {
   if (!handlers[type]) handlers[type] = [];
   handlers[type].push(fn);
-  return () => {
-    handlers[type] = handlers[type].filter(h => h !== fn);
-  };
+  return () => { handlers[type] = handlers[type].filter(h => h !== fn); };
 }
 
 function _emit(type, msg) {

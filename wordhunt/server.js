@@ -247,7 +247,7 @@ function initGame(room) {
 wss.on('connection', ws => {
   let myRoom = null, myCode = null;
 
-  ws.send(JSON.stringify({ type: 'dictionary', words: WORD_ARRAY }));
+  setTimeout(() => ws.send(JSON.stringify({ type: 'dictionary', words: WORD_ARRAY })), 0);
 
   ws.on('message', raw => {
     let msg;
