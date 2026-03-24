@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Word Hunt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/lobby.css">
+  <link rel="stylesheet" href="/css/game.css">
+  <link rel="stylesheet" href="/css/end.css">
+</head>
+<body>
+
+  <!-- TITLE SCREEN -->
+  <div id="s-title" class="screen active">
+    <div class="logo-wrap">
+      <div class="logo">Word Hunt</div>
+      <div class="logo-sub">Connect letters · Find words</div>
+    </div>
+    <div class="tile-demo">
+      <div class="demo-tile">W</div>
+      <div class="demo-tile">O</div>
+      <div class="demo-tile">R</div>
+      <div class="demo-tile">D</div>
+      <div class="demo-tile">S</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Enter your name</div>
+      <div class="field">
+        <input type="text" class="inp" id="inp-name" placeholder="Your name" maxlength="16" autocomplete="off">
+      </div>
+      <div class="mode-buttons">
+        <button class="btn btn-secondary" onclick="_soloStart()">Solo Play</button>
+        <button class="btn btn-primary"   onclick="_createRoom()">Create Room</button>
+      </div>
+      <div class="join-section">
+        <div class="hint" style="margin-bottom:.5rem">Have a code?</div>
+        <div class="join-row">
+          <input type="text" class="inp inp-code" id="inp-code" placeholder="XXXX" maxlength="4" style="flex:1">
+          <button class="btn btn-outline" onclick="_joinRoom()">Join</button>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace">
+      <span class="conn-dot" id="conn-dot"></span>
+      <span id="conn-label">connecting…</span>
+    </div>
+  </div>
+
+  <!-- LOBBY SCREEN -->
+  <div id="s-lobby" class="screen">
+    <div style="margin-top:3rem"></div>
+    <div class="room-code-wrap" style="text-align:center">
+      <div class="room-code-label">Room Code</div>
+      <div class="room-code" id="lobby-code">—</div>
+      <div class="hint">Share this code with friends</div>
+    </div>
+    <div class="player-list" id="lobby-players"></div>
+    <div id="lobby-action"></div>
+    <div class="hint" id="lobby-hint"></div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="s-game" class="screen">
+    <div class="game-header">
+      <div class="gh-left">
+        <div class="gh-title">WORD HUNT</div>
+      </div>
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" viewBox="0 0 52 52">
+          <circle class="timer-bg"   cx="26" cy="26" r="22"/>
+          <circle class="timer-fill" cx="26" cy="26" r="22"
+                  id="timer-arc" stroke-dasharray="138.23" stroke-dashoffset="0" stroke="var(--accent2)"/>
+        </svg>
+        <div class="timer-text" id="g-timer">90</div>
+      </div>
+    </div>
+    <div class="score-strip" id="g-scores"></div>
+    <div class="word-row">
+      <div class="word-display" id="g-word">—</div>
+      <button class="btn btn-outline" style="padding:.6rem .9rem;font-size:.75rem" onclick="_clearPath()">✕</button>
+    </div>
+    <div class="swipe-hint">Drag across letters to form words</div>
+    <div class="grid-wrap" id="grid-wrap">
+      <svg class="grid-svg" id="path-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+      <div class="grid" id="g-grid"></div>
+    </div>
+    <div class="found-list" id="g-found-list"></div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="s-end" class="screen">
+    <div class="winner-banner">
+      <span class="winner-emoji" id="end-emoji">🏆</span>
+      <div class="winner-label">Winner</div>
+      <div class="winner-name" id="end-winner">—</div>
+    </div>
+    <div class="results-grid" id="end-results"></div>
+    <div class="all-words-section">
+      <div class="all-words-header">All Possible Words (<span id="aw-count">0</span>)</div>
+      <div class="all-words-grid" id="aw-grid"></div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1rem">
+      <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

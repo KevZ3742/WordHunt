@@ -6,7 +6,9 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-app.use(express.static(path.join(__dirname, 'public')));
+const PUBLIC_DIR = path.resolve(path.dirname(require.resolve('./package.json')), 'public');
+app.use(express.static(PUBLIC_DIR));
+app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 
 // ── TRIE ──
 class TrieNode {

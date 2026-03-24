@@ -1,0 +1,96 @@
+/* ── END SCREEN ── */
+#s-end {
+  justify-content: flex-start;
+  padding: 1.5rem 1rem 2rem;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* ── WINNER BANNER ── */
+.winner-banner {
+  text-align: center;
+  padding: 1.5rem 2rem;
+  background: var(--surface);
+  border: 1.5px solid var(--gold);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+}
+.winner-emoji  { font-size: 3rem; display: block; margin-bottom: .5rem; }
+.winner-label  { font-family: 'Space Mono', monospace; font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.winner-name   { font-size: 2rem; font-weight: 800; color: var(--gold); }
+
+/* ── PLAYER RESULT ROWS ── */
+.results-grid {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.result-row {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.result-row.winner-row { border-color: var(--gold); }
+
+.result-name { font-weight: 700; font-size: .95rem; }
+.result-meta { font-family: 'Space Mono', monospace; font-size: .8rem; color: var(--accent); }
+
+.result-words {
+  margin-top: .4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
+.result-word-chip {
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  background: var(--surface2);
+  border-radius: 4px;
+  padding: .15rem .5rem;
+  color: var(--muted);
+}
+.result-word-chip.long { color: var(--accent2); }
+
+/* ── ALL WORDS SECTION ── */
+.all-words-section {
+  width: 100%;
+  max-width: 480px;
+}
+
+.all-words-header {
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .75rem;
+}
+
+.all-words-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.aw-chip {
+  font-family: 'Space Mono', monospace;
+  font-size: .72rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: .25rem .65rem;
+  color: var(--text);
+  transition: all .15s;
+}
+.aw-chip.found-by-me { border-color: var(--accent2); color: var(--accent2); background: rgba(0,255,136,.06); }
+.aw-chip.missed      { color: var(--muted); }
+.aw-chip .aw-len     { font-size: .55rem; color: var(--muted); }
